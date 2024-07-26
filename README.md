@@ -60,7 +60,7 @@ This script will:
 1. Load and preprocess the images
 2. Split the data into training and testing sets
 3. Build and train both binary and categorical classification models
-4. Save the trained models as `.h5` files in the `BrainTumorDetection/` directory
+4. Save the trained models as `.keras` files in the `BrainTumorDetection/` directory
 
 You can adjust the `size` and `epochsAmount` parameters in the script to modify the input image size and the number of training epochs.
 
@@ -79,8 +79,8 @@ detector.PrepareImage("BrainTumorDetection/pred/image_to_predict.jpg")
 ```
 
 The `PrepareImage` method will print the prediction result:
-- A value close to 0 indicates no tumor
-- A value close to 1 indicates the presence of a tumor
+- A value close to 1 indicates no tumor
+- A value close to 0 indicates the presence of a tumor
 
 ## Contributing
 
