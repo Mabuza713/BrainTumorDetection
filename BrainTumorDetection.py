@@ -2,13 +2,17 @@ import cv2
 from keras.models import load_model
 from PIL import Image
 import numpy as np
-
+import configparser
 
 class BrainTumorDetection:
-    def __init__(self, size):
-        self.modelBin = load_model("BrainTumorDetection/BrainTumor10.h5")
-        self.modelCat = load_model("BrainTumorDetection/BrainTumorCategorical10.h5")
-        self.size = size 
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        
+        
+        self.modelBin = load_model("BrainTumorBinary20.keras")
+        self.modelCat = load_model("BrainTumorCategorical20.keras")
+        self.size = int(config.get("General", "size"))
     
     def PrepareImage(self, image):
         image = cv2.imread(image)
@@ -17,10 +21,10 @@ class BrainTumorDetection:
         image = np.array(image)
         
         input = np.expand_dims(image, axis=0)
-        result = self.modelBin.predict_step(input)
+        result = self.modelCat.predict_step(input)
         result = result.numpy()
         print(result[0, 0])
 
-test = BrainTumorDetection(size = 64)
-test.PrepareImage("BrainTumorDetection\\pred\\pred2.jpg") # There is tumor = 1
-test.PrepareImage("BrainTumorDetection\\pred\\pred0.jpg") # No tumor = 0
+test = BrainTumorDetection()
+test.PrepareImage("pred\\pred45.jpg") # There is tumor = 0
+test.PrepareImage("pred\\pred42.jpg") # There is no tumor = 1

@@ -11,16 +11,23 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 import shutil
 from keras.utils import to_categorical
+import configparser;
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 
+
+
 class BrainTumorTraining:
-    def __init__(self, noTumorDir, yesTumorDir, size):
-        self.size = size 
-        self.noTumorDir = noTumorDir
-        self.yesTumorDir = yesTumorDir
-        self.noTumor = os.listdir(noTumorDir)
-        self.yesTumor = os.listdir(yesTumorDir)
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        
+        self.size = int(config.get("General", "size")) 
+        self.noTumorDir = config.get("General", "noTumorDir")
+        self.yesTumorDir = config.get("General", "yesTumorDir")
+        self.noTumor = os.listdir(config.get("General", "noTumorDir"))
+        self.yesTumor = os.listdir(config.get("General", "yesTumorDir"))
+        self.epochesAmount = int(config.get("General", "epoches"))
         self.dataSet = None
         self.label = None
         
@@ -53,7 +60,7 @@ class BrainTumorTraining:
         yTest = to_categorical(yTest, num_classes= 2)
         
         return xTrain, xTest, yTrain, yTest
-    def BuildingModelBinary(self,epochsAmount):
+    def BuildingModelBinary(self):
         xTrain, xTest, yTrain, yTest = self.ResizeAndConvertData()
         model = Sequential()
         
@@ -74,15 +81,14 @@ class BrainTumorTraining:
         model.add(Activation("relu"))
         model.add(Dropout(0.5)) # Layer that turns off some neurons to avoid over-training
         
-        model.add(Dense(1)) # Output neuron binary only yes or no
+        model.add(Dense(2)) # Output neuron binary only yes or no
         model.add(Activation("sigmoid")) # Our problem is Binary problem so we are using sigmoid function to be able to comapre outputs on interval (0,1) 
         
         model.compile(loss = "binary_crossentropy", optimizer= "adam", metrics= ["accuracy"]) #accuracy metric will help us measure the performance of our model
-        model.fit(xTrain, yTrain, batch_size=16, verbose=True, epochs = epochsAmount, validation_data=(xTest, yTest), shuffle=False) # Fitting data into our model
-        model.save("BrainTumor" + str(epochsAmount) + ".h5")
-        shutil.move("BrainTumor" + str(epochsAmount) + ".h5", "BrainTumorDetection")
+        model.fit(xTrain, yTrain, batch_size=16, verbose=True, epochs = self.epochesAmount, validation_data=(xTest, yTest), shuffle=False) # Fitting data into our model
+        model.save("BrainTumorBinary" + str(self.epochesAmount) + ".keras")
                 
-    def BuildingModelCategorical(self,epochsAmount):
+    def BuildingModelCategorical(self):
         xTrain, xTest, yTrain, yTest = self.ResizeAndConvertData()
         model = Sequential()
         
@@ -107,10 +113,10 @@ class BrainTumorTraining:
         model.add(Activation("softmax"))
         
         model.compile(loss = "binary_crossentropy", optimizer= "adam", metrics= ["accuracy"]) #accuracy metric will help us measure the performance of our model
-        model.fit(xTrain, yTrain, batch_size=16, verbose=True, epochs = epochsAmount, validation_data=(xTest, yTest), shuffle=False) # Fitting data into our model
-        model.save("BrainTumorCategorical" + str(epochsAmount) + ".h5")
-        shutil.move("BrainTumorCategorical" + str(epochsAmount) + ".h5", "BrainTumorDetection")
+        model.fit(xTrain, yTrain, batch_size=16, verbose=True, epochs = self.epochesAmount, validation_data=(xTest, yTest), shuffle=False) # Fitting data into our model
+        model.save("BrainTumorCategorical" + str(self.epochesAmount) + ".keras")
 
-test = BrainTumorTraining(noTumorDir = "BrainTumorDetection/no", yesTumorDir= "BrainTumorDetection/yes", size = 64)
+test = BrainTumorTraining()
 test.ResizeAndConvertData()
-test.BuildingModelCategorical(epochsAmount= 10)
+test.BuildingModelCategorical()
+test.BuildingModelBinary()
